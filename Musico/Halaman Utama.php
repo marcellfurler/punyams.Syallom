@@ -1,11 +1,4 @@
-<?php
-session_start();
 
-if (!isset($_SESSION['username'])) {
-    header('Location: Halaman_Login.php?message=You must log in first.');
-    exit();
-}
-?>
 
 <!DOCTYPE html>
 <html lang="en">
