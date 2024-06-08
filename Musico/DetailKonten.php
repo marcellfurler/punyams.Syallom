@@ -1,9 +1,10 @@
 <?php
 session_start();
 
+// Periksa apakah pengguna sudah login atau belum
 if (!isset($_SESSION['username'])) {
-    header('Location: Halaman_Login.php?message=You must log in first.');
-    exit();
+    echo "<script>alert('Anda belum login. Silakan login terlebih dahulu.'); window.location = 'Halaman_Login.php';</script>";
+    exit(); // Hentikan eksekusi script jika pengguna belum login
 }
 
 include "Connection.php";
