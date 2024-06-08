@@ -1,14 +1,10 @@
 <?php
 session_start();
 
+// Periksa apakah pengguna sudah login atau belum
 if (!isset($_SESSION['username'])) {
-    header('Location: Halaman_Login.php?message=You must log in first.');
-    exit();
-}
-
-if (!isset($_GET['id_rincian_tiket'])) {
-    header('Location: Halaman Utama.php');
-    exit();
+    echo "<script>alert('Anda belum login. Silakan login terlebih dahulu.'); window.location = 'Halaman_Login.php';</script>";
+    exit(); // Hentikan eksekusi script jika pengguna belum login
 }
 
 $id_rincian_tiket = $_GET['id_rincian_tiket'];
@@ -16,6 +12,7 @@ $id_rincian_tiket = $_GET['id_rincian_tiket'];
 include "Connection.php";
 
 $konser = array();
+$tiket=array();
 
 $stmt = $conn->prepare("SELECT * FROM daftar_konser WHERE id_rincian_tiket = ?");
 $stmt->bind_param("i", $id_rincian_tiket);
@@ -37,7 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tanggalPembelian = date("Y-m-d");
     
     // Ambil ID tiket dari formulir yang dikirimkan
-    $id_tiket = $_GET['id_rincian_tiket'];
+    $id_rincian_tiket = $_GET['id_rincian_tiket'];
+    $potong_urutan = substr($id_rincian_tiket, 11, 5);
+    $id_tiket = $potong_urutan;
 
     $sql = "INSERT INTO pembelian_tiket_konser (nama_pemesanan, nomor_hp, email_pemesanan, jumlah, tanggal_pembelian, id_tiket) 
             VALUES (?, ?, ?, ?, ?, ?)";
@@ -46,7 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ssssii", $namaPemesan, $nomorHpPemesan, $emailPemesan, $jumlahPemesanan, $tanggalPembelian, $id_tiket);
 
     if ($stmt->execute()) {
-        echo "Data berhasil disimpan";
+        echo "";
+        
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -131,9 +131,11 @@ $conn->close();
             <br>
 
             <button onclick="alert('Apakah anda yakin ingin mereset inputan anda?')" type="reset" class="reset">Reset</button>
-            <button type="submit" onclick="konfirmasiPembayaran()" class="submit" name="submit">Submit</button>
+            <button type="submit" onclick="konfirmasiPembayaran()" class="sumbit" name="submit">Submit</button>
         </form>
     </div>
+
+
 
     <!-- Footer -->
     <div class="footeren">
@@ -147,31 +149,31 @@ $conn->close();
     </div>
 
     <script>
-        function konfirmasiPembayaran() {
-            var number = document.getElementById("number").value;
-            if (number < 1) {
-                alert("Jumlah pemesanan harus lebih dari 0");
-                return false;
-            }
-            
-            var nama = document.getElementById("nama").value;
-            var ticketPrice = <?php return $konser['harga_tiket']; ?>;
-            var total = number * ticketPrice;
+    function konfirmasiPembayaran() {
+        var number = document.getElementById("number").value;
+        if (number < 1) {
+            alert("Jumlah pemesanan harus lebih dari 0");
+            return false; // Batalkan pengiriman formulir jika jumlah tidak valid
+        }
+        
+        var nama = document.getElementById("nama").value;
+        var ticketPrice = <?php echo $konser['harga_tiket']; ?>;
+        var total = number * ticketPrice;
 
-            var confirmationMessage = "Hallo " + nama + ", total pembelian anda adalah " + total + ". Anda yakin ingin membayar?";
-            return confirm(confirmationMessage);
+        var confirmationMessage = "Hallo " + nama + ", total pembelian anda adalah " + total + ". Anda yakin ingin membayar?";
+        return confirm(confirmationMessage); // Tampilkan konfirmasi dan kembalikan hasilnya
+    }
+
+    function validateForm() {
+        var number = document.getElementById("number").value;
+        if (number < 1) {
+            alert("Jumlah pemesanan harus lebih dari 0");
+            return false;
         }
 
-        function validateForm() {
-            var number = document.getElementById("number").value;
-            if (number < 1) {
-                alert("Jumlah pemesanan harus lebih dari 0");
-                return false;
-            }
-
-            return true;
-        }
-    </script>
+        return true;
+    }
+</script>
 
 </body>
 </html>
